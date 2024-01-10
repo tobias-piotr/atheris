@@ -1,0 +1,15 @@
+version: "3.8"
+
+services:
+  go:
+    build:
+      dockerfile: Dockerfile
+      target: dev
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    ports:
+      - 8888:8888
+    stdin_open: true
+    tty: true
