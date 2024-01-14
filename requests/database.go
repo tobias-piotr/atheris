@@ -1,4 +1,4 @@
-package main
+package requests
 
 import (
 	"encoding/json"
@@ -8,30 +8,6 @@ import (
 	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3"
 )
-
-func GetConnection(filename string) *sqlx.DB {
-	db, err := sqlx.Connect("sqlite3", filename)
-	if err != nil {
-		slog.Error("Error connecting to database", "error", err.Error())
-		panic(err)
-	}
-	return db
-}
-
-func Migrate(db *sqlx.DB) {
-	_, err := db.Exec(`
-	CREATE TABLE IF NOT EXISTS requests (
-		id UUID PRIMARY KEY,
-		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-		path VARCHAR(255) NOT NULL,
-		response JSONB
-	);
-	`)
-	if err != nil {
-		slog.Error("Error creating tables", "error", err.Error())
-		panic(err)
-	}
-}
 
 func InsertRequest(db *sqlx.DB, req RequestData) {
 	res, err := json.Marshal(req.Response)
