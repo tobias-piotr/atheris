@@ -1,7 +1,6 @@
-package main
+package requests
 
 import (
-	"database/sql/driver"
 	"encoding/json"
 	"fmt"
 	"time"
