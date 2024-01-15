@@ -7,3 +7,10 @@ Current targets:
 - CLI to start the gateway API
 - CLI to read the requests
 - CLI to compare the responses
+
+Next steps:
+
+- Godocs
+- GH Actions
+- CLIs
+- Tests

@@ -1,22 +1,10 @@
+/*
+Copyright © 2024 Piotr Tobiasz
+*/
 package main
 
-import (
-	"atheris/libs"
-	"atheris/requests"
-
-	"github.com/labstack/echo/v4"
-)
+import "atheris/cmd"
 
 func main() {
-	db := libs.GetDBConnection("database.db")
-	libs.MigrateDB(db)
-
-	handler := requests.NewAPIHandler(db)
-
-	e := echo.New()
-
-	e.Any("/*", handler.HandleRequest)
-
-	// TODO: Replace with slog
-	e.Logger.Fatal(e.Start(":8888"))
+	cmd.Execute()
 }
