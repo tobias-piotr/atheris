@@ -9,6 +9,9 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
+// TODO: Add ability to set name
+// TODO: Add delete
+
 func InsertRequest(db *sqlx.DB, req RequestData) {
 	res, err := json.Marshal(req.Response)
 	if err != nil {
