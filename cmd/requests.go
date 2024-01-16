@@ -19,7 +19,7 @@ var requestsCmd = &cobra.Command{
 	Use:   "requests",
 	Short: "View and manage requests",
 	Long: `View a list of saved requests. You can also view the details of each request,
-	set a name for them, delete them, and most importantly, compare them to see the differences.`,
+set a name for them, delete them, and most importantly, compare them to see the differences.`,
 	Run: func(_ *cobra.Command, _ []string) {
 		m := tui.NewModel([]list.Item{})
 		p := tea.NewProgram(m, tea.WithAltScreen())
