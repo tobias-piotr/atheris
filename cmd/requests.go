@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"os"
 
+	"atheris/libs"
 	"atheris/requests/tui"
 
-	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/spf13/cobra"
 )
@@ -21,7 +21,10 @@ var requestsCmd = &cobra.Command{
 	Long: `View a list of saved requests. You can also view the details of each request,
 set a name for them, delete them, and most importantly, compare them to see the differences.`,
 	Run: func(_ *cobra.Command, _ []string) {
-		m := tui.NewModel([]list.Item{})
+		db := libs.GetDBConnection(dbFilename)
+		libs.MigrateDB(db)
+
+		m := tui.NewModel(db)
 		p := tea.NewProgram(m, tea.WithAltScreen())
 
 		if _, err := p.Run(); err != nil {
@@ -33,4 +36,7 @@ set a name for them, delete them, and most importantly, compare them to see the 
 
 func init() {
 	rootCmd.AddCommand(requestsCmd)
+
+	// SQLite database file
+	serverCmd.Flags().StringVarP(&dbFilename, "db", "d", "database.sqlite", "SQLite database file")
 }
