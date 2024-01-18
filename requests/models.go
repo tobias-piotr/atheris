@@ -8,6 +8,24 @@ import (
 	"github.com/google/uuid"
 )
 
+// TODO: Move the panics
+
+type NullableString string
+
+func (ns *NullableString) Scan(value any) error {
+	fmt.Println("scanning", value)
+	if value == nil {
+		*ns = ""
+		return nil
+	}
+	v, ok := value.(string)
+	if !ok {
+		panic(fmt.Sprintf("unsupported type: %T", v))
+	}
+	*ns = NullableString(v)
+	return nil
+}
+
 type APIData struct {
 	Prefix string
 	URL    string
@@ -23,6 +41,7 @@ type API struct {
 }
 
 type RequestData struct {
+	Method   string
 	Prefix   string
 	Path     string
 	Response ResponseData
@@ -31,6 +50,8 @@ type RequestData struct {
 type Request struct {
 	ID        uuid.UUID
 	CreatedAt time.Time `db:"created_at"`
+	Name      NullableString
+	Method    string
 	Path      string
 	Response  Response
 }

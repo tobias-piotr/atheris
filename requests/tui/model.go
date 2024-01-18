@@ -24,8 +24,9 @@ var (
 type item struct {
 	id        string
 	createdAt time.Time
-	path      string
 	name      string
+	method    string
+	path      string
 }
 
 func (i item) Title() string {
@@ -36,8 +37,7 @@ func (i item) Title() string {
 }
 
 func (i item) Description() string {
-	// TODO: Add method
-	return fmt.Sprintf("GET %s at %s", i.path, i.createdAt)
+	return fmt.Sprintf("%s %s at %s", i.method, i.path, i.createdAt)
 }
 
 func (i item) FilterValue() string {
@@ -53,8 +53,9 @@ func ItemsFromRequests(rqs []requests.Request) []list.Item {
 		items[i] = item{
 			id:        rq.ID.String(),
 			createdAt: rq.CreatedAt,
+			name:      string(rq.Name),
+			method:    rq.Method,
 			path:      rq.Path,
-			name:      "",
 		}
 	}
 	return items

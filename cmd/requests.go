@@ -38,5 +38,5 @@ func init() {
 	rootCmd.AddCommand(requestsCmd)
 
 	// SQLite database file
-	serverCmd.Flags().StringVarP(&dbFilename, "db", "d", "database.sqlite", "SQLite database file")
+	requestsCmd.Flags().StringVarP(&dbFilename, "db", "d", "database.sqlite", "SQLite database file")
 }
