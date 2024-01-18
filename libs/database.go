@@ -24,6 +24,8 @@ func MigrateDB(db *sqlx.DB) {
 	CREATE TABLE IF NOT EXISTS requests (
 		id UUID PRIMARY KEY,
 		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+		name VARCHAR(255),
+		method VARCHAT(15) NOT NULL,
 		path VARCHAR(255) NOT NULL,
 		response JSONB
 	);
