@@ -23,3 +23,7 @@ enter: ## Enter server container
 .PHONY: test
 test: ## Run tests with ignored caching
 	go test -count=1 ./...
+
+.PHONY: requests
+requests: ## Rebuild and run requests command
+	go build && ./atheris requests

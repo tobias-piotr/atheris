@@ -3,7 +3,6 @@ package tui
 import (
 	"fmt"
 	"os"
-	"time"
 
 	"atheris/requests"
 
@@ -20,51 +19,12 @@ var (
 				Render
 )
 
-// Item represents a request on the list
-type item struct {
-	id        string
-	createdAt time.Time
-	name      string
-	method    string
-	path      string
-}
-
-func (i item) Title() string {
-	if i.name == "" {
-		return i.id
-	}
-	return i.name
-}
-
-func (i item) Description() string {
-	return fmt.Sprintf("%s %s at %s", i.method, i.path, i.createdAt)
-}
-
-func (i item) FilterValue() string {
-	if i.name == "" {
-		return i.id
-	}
-	return i.name
-}
-
-func ItemsFromRequests(rqs []requests.Request) []list.Item {
-	items := make([]list.Item, len(rqs))
-	for i, rq := range rqs {
-		items[i] = item{
-			id:        rq.ID.String(),
-			createdAt: rq.CreatedAt,
-			name:      string(rq.Name),
-			method:    rq.Method,
-			path:      rq.Path,
-		}
-	}
-	return items
-}
-
 type model struct {
 	list         list.Model
+	details      RequestDetails
 	delegateKeys *delegateKeyMap
 	db           *sqlx.DB
+	selectedRq   *string
 }
 
 func NewModel(db *sqlx.DB) model {
@@ -81,8 +41,11 @@ func NewModel(db *sqlx.DB) model {
 	itemList := list.New(items, delegate, 0, 0)
 	itemList.Title = "Requests"
 
+	details := NewRequestDetails(db, nil)
+
 	return model{
 		list:         itemList,
+		details:      details,
 		delegateKeys: delKeys,
 		db:           db,
 	}
@@ -93,11 +56,25 @@ func (m model) Init() tea.Cmd {
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	// TODO: Split it into list and details
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		if msg.String() == "ctrl+c" {
 			return m, tea.Quit
 		}
+
+		if m.selectedRq == nil {
+			// Handle list updates
+			if msg.String() == "enter" {
+				rq := m.list.SelectedItem().(item)
+				m.selectedRq = &rq.id
+				return m, nil
+			}
+		} else {
+			// Handle details updates
+			return m.details.Update(msg, m)
+		}
+
 	case tea.WindowSizeMsg:
 		h, v := appStyle.GetFrameSize()
 		m.list.SetSize(msg.Width-h, msg.Height-v)
@@ -109,5 +86,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m model) View() string {
-	return appStyle.Render(m.list.View())
+	if m.selectedRq == nil {
+		return appStyle.Render(m.list.View())
+	}
+	m.details.reqID = m.selectedRq
+	return appStyle.Render(m.details.View())
 }

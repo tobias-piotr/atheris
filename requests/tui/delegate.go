@@ -3,7 +3,7 @@ package tui
 import (
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
-	tea "github.com/charmbracelet/bubbletea"
+	// tea "github.com/charmbracelet/bubbletea"
 )
 
 type delegateKeyMap struct {
@@ -24,25 +24,25 @@ func newDelegateKeyMap() *delegateKeyMap {
 func newItemDelegate(keys *delegateKeyMap) list.DefaultDelegate {
 	d := list.NewDefaultDelegate()
 
-	d.UpdateFunc = func(msg tea.Msg, m *list.Model) tea.Cmd {
-		var title string
+	// d.UpdateFunc = func(msg tea.Msg, m *list.Model) tea.Cmd {
+	// 	var title string
 
-		if i, ok := m.SelectedItem().(item); ok {
-			title = i.Title()
-		} else {
-			return nil
-		}
+	// 	if i, ok := m.SelectedItem().(item); ok {
+	// 		title = i.Title()
+	// 	} else {
+	// 		return nil
+	// 	}
 
-		switch msg := msg.(type) {
-		case tea.KeyMsg:
-			switch {
-			case key.Matches(msg, keys.choose):
-				return m.NewStatusMessage(statusMessageStyle("You chose " + title))
-			}
-		}
+	// 	switch msg := msg.(type) {
+	// 	case tea.KeyMsg:
+	// 		switch {
+	// 		case key.Matches(msg, keys.choose):
+	// 			return m.NewStatusMessage(statusMessageStyle("You chose " + title))
+	// 		}
+	// 	}
 
-		return nil
-	}
+	// 	return nil
+	// }
 
 	help := []key.Binding{keys.choose}
 
