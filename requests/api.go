@@ -10,8 +10,6 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-// TODO: Add logic for adding APIs
-
 func ResolvePrefix(path string) string {
 	apiMap := map[string]string{
 		"aichat": "http://localhost:8080",

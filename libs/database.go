@@ -1,25 +1,22 @@
 package libs
 
 import (
-	"log/slog"
+	"fmt"
+	"os"
 
 	"github.com/jmoiron/sqlx"
 )
 
 func GetDBConnection(filename string) *sqlx.DB {
-	slog.Info("Connecting to database", "filename", filename)
-
 	db, err := sqlx.Connect("sqlite3", filename)
 	if err != nil {
-		slog.Error("Error connecting to database", "error", err.Error())
-		panic(err)
+		fmt.Fprintf(os.Stderr, "Error connecting to database: %s\n", err.Error())
+		os.Exit(1)
 	}
 	return db
 }
 
 func MigrateDB(db *sqlx.DB) {
-	slog.Info("Migrating database")
-
 	_, err := db.Exec(`
 	CREATE TABLE IF NOT EXISTS requests (
 		id UUID PRIMARY KEY,
@@ -31,7 +28,7 @@ func MigrateDB(db *sqlx.DB) {
 	);
 	`)
 	if err != nil {
-		slog.Error("Error creating tables", "error", err.Error())
-		panic(err)
+		fmt.Fprintf(os.Stderr, "Error creating table: %s\n", err.Error())
+		os.Exit(1)
 	}
 }
