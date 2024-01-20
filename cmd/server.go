@@ -4,8 +4,6 @@ Copyright © 2024 Piotr Tobiasz
 package cmd
 
 import (
-	"log/slog"
-
 	"atheris/libs"
 	"atheris/requests"
 
@@ -24,8 +22,6 @@ var serverCmd = &cobra.Command{
 	Short: "Starts server",
 	Long:  "Starts atheris server, that will catch all requests and store them in database",
 	Run: func(_ *cobra.Command, _ []string) {
-		slog.Info("Starting atheris server")
-
 		db := libs.GetDBConnection(dbFilename)
 		libs.MigrateDB(db)
 
@@ -35,7 +31,6 @@ var serverCmd = &cobra.Command{
 
 		e.Any("/*", handler.HandleRequest)
 
-		// TODO: Replace with slog
 		e.Logger.Fatal(e.Start(":" + port))
 	},
 }

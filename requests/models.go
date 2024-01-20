@@ -3,12 +3,11 @@ package requests
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/google/uuid"
 )
-
-// TODO: Move the panics
 
 // NullableString is a string that can be null
 type NullableString string
@@ -22,7 +21,8 @@ func (ns *NullableString) Scan(value any) error {
 	}
 	v, ok := value.(string)
 	if !ok {
-		panic(fmt.Sprintf("unsupported type: %T", v))
+		fmt.Fprintf(os.Stderr, "unsupported type: %T\n", value)
+		os.Exit(1)
 	}
 	*ns = NullableString(v)
 	return nil

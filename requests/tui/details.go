@@ -83,9 +83,14 @@ func (rd RequestDetails) Update(msg tea.KeyMsg, m *model) (tea.Model, tea.Cmd) {
 }
 
 func (rd RequestDetails) View() string {
-	// TODO: Handle error
-	req, _ := requests.GetRequest(rd.db, *rd.reqID)
-	reqText, _ := json.MarshalIndent(req.Response, "", "  ")
+	req, err := requests.GetRequest(rd.db, *rd.reqID)
+	if err != nil {
+		return fmt.Sprintf("Error: %s", err.Error())
+	}
+	reqText, err := json.MarshalIndent(req.Response, "", "  ")
+	if err != nil {
+		return fmt.Sprintf("Error: %s", err.Error())
+	}
 
 	rd.textArea.SetValue(string(reqText))
 
