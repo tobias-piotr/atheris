@@ -1,53 +1,28 @@
 package tui
 
 import (
-	"fmt"
-	"os"
-
-	"atheris/requests"
-
-	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/jmoiron/sqlx"
 )
 
-var (
-	appStyle           = lipgloss.NewStyle().Padding(1, 2)
-	statusMessageStyle = lipgloss.NewStyle().
-				Foreground(lipgloss.AdaptiveColor{Light: "#04B575", Dark: "#04B575"}).
-				Render
-)
+var appStyle = lipgloss.NewStyle().Padding(1, 2)
 
 type model struct {
-	list         list.Model
-	details      RequestDetails
-	delegateKeys *delegateKeyMap
-	db           *sqlx.DB
-	selectedRq   *string
+	list       RequestList
+	details    RequestDetails
+	db         *sqlx.DB
+	selectedRq *string
 }
 
 func NewModel(db *sqlx.DB) model {
-	rqs, err := requests.GetRequests(db)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error getting requests: %v\n", err)
-		os.Exit(1)
-	}
-	items := ItemsFromRequests(rqs)
-
-	delKeys := newDelegateKeyMap()
-	delegate := newItemDelegate(delKeys)
-
-	itemList := list.New(items, delegate, 0, 0)
-	itemList.Title = "Requests"
-
+	list := NewRequestList(db)
 	details := NewRequestDetails(db, nil)
 
 	return model{
-		list:         itemList,
-		details:      details,
-		delegateKeys: delKeys,
-		db:           db,
+		list:    list,
+		details: details,
+		db:      db,
 	}
 }
 
@@ -56,39 +31,36 @@ func (m model) Init() tea.Cmd {
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	// TODO: Split it into list and details
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		if msg.String() == "ctrl+c" {
+		if msg.String() == "ctrl+c" || msg.String() == "q" {
 			return m, tea.Quit
 		}
 
 		if m.selectedRq == nil {
-			// Handle list updates
+			// Handle item selection
 			if msg.String() == "enter" {
-				rq := m.list.SelectedItem().(item)
+				rq := m.list.items.SelectedItem().(item)
 				m.selectedRq = &rq.id
+				m.details.reqID = m.selectedRq
 				return m, nil
 			}
 		} else {
 			// Handle details updates
-			return m.details.Update(msg, m)
+			return m.details.Update(msg, &m)
 		}
 
 	case tea.WindowSizeMsg:
-		h, v := appStyle.GetFrameSize()
-		m.list.SetSize(msg.Width-h, msg.Height-v)
+		m.list.Resize(msg)
 	}
 
-	var cmd tea.Cmd
-	m.list, cmd = m.list.Update(msg)
-	return m, cmd
+	// Default to list update
+	return m, m.list.Update(msg)
 }
 
 func (m model) View() string {
 	if m.selectedRq == nil {
 		return appStyle.Render(m.list.View())
 	}
-	m.details.reqID = m.selectedRq
 	return appStyle.Render(m.details.View())
 }

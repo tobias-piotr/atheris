@@ -16,7 +16,6 @@ import (
 type keyMap struct {
 	Rename key.Binding
 	Delete key.Binding
-	Help   key.Binding
 	Back   key.Binding
 	Quit   key.Binding
 }
@@ -24,68 +23,59 @@ type keyMap struct {
 // ShortHelp returns keybindings to be shown in the mini help view. It's part
 // of the key.Map interface.
 func (k keyMap) ShortHelp() []key.Binding {
-	return []key.Binding{k.Back, k.Quit, k.Help}
+	return []key.Binding{k.Rename, k.Delete, k.Back, k.Quit}
 }
 
 // FullHelp returns keybindings for the expanded help view. It's part of the
 // key.Map interface.
 func (k keyMap) FullHelp() [][]key.Binding {
-	return [][]key.Binding{
-		{k.Rename, k.Delete},
-		{k.Back, k.Quit, k.Help},
-	}
+	return [][]key.Binding{k.ShortHelp()}
 }
 
 var keys = keyMap{
-	Help: key.NewBinding(
-		key.WithKeys("?"),
-		key.WithHelp("?", "toggle help"),
+	Rename: key.NewBinding(
+		key.WithKeys("r"),
+		key.WithHelp("r", "rename"),
+	),
+	Delete: key.NewBinding(
+		key.WithKeys("d"),
+		key.WithHelp("d", "delete"),
 	),
 	Quit: key.NewBinding(
-		key.WithKeys("q", "esc", "ctrl+c"),
+		key.WithKeys("q", "esc"),
 		key.WithHelp("q", "quit"),
 	),
 	Back: key.NewBinding(
 		key.WithKeys("b"),
 		key.WithHelp("b", "back"),
 	),
-	Rename: key.NewBinding(
-		key.WithKeys("?"),
-		key.WithHelp("?", "toggle help"),
-	),
-	Delete: key.NewBinding(
-		key.WithKeys("q", "esc", "ctrl+c"),
-		key.WithHelp("q", "quit"),
-	),
 }
 
 type RequestDetails struct {
-	textArea textarea.Model
-	help     help.Model
+	textArea *textarea.Model
+	help     *help.Model
 	db       *sqlx.DB
 	reqID    *string
 }
 
 func NewRequestDetails(db *sqlx.DB, reqID *string) RequestDetails {
+	ta := textarea.New()
+	h := help.New()
 	return RequestDetails{
-		textArea: textarea.New(),
-		help:     help.New(),
+		textArea: &ta,
+		help:     &h,
 		db:       db,
 		reqID:    reqID,
 	}
 }
 
-func (rd RequestDetails) Update(msg tea.KeyMsg, m model) (tea.Model, tea.Cmd) {
+func (rd RequestDetails) Update(msg tea.KeyMsg, m *model) (tea.Model, tea.Cmd) {
 	switch msg.String() {
-	case "?":
-		rd.help.ShowAll = !rd.help.ShowAll
-	case "b":
-		m.selectedRq = nil
-		return m, nil
 	case "r":
-		m.selectedRq = nil
 		return m, nil
 	case "d":
+		return m, nil
+	case "b":
 		m.selectedRq = nil
 		return m, nil
 	}
