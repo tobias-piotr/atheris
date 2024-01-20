@@ -36,6 +36,17 @@ func GetRequests(db *sqlx.DB) ([]Request, error) {
 	return reqs, err
 }
 
+func GetRequest(db *sqlx.DB, id string) (Request, error) {
+	query := `
+	SELECT id, created_at, name, method, path, response
+	FROM requests
+	WHERE id = $1;
+	`
+	var req Request
+	err := db.Get(&req, query, id)
+	return req, err
+}
+
 func SetRequestName(db *sqlx.DB, id uuid.UUID, name string) error {
 	_, err := db.Exec(`
 	UPDATE requests
