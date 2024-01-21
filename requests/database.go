@@ -46,7 +46,7 @@ func GetRequest(db *sqlx.DB, id string) (Request, error) {
 	return req, err
 }
 
-func SetRequestName(db *sqlx.DB, id uuid.UUID, name string) error {
+func SetRequestName(db *sqlx.DB, id string, name string) error {
 	_, err := db.Exec(`
 	UPDATE requests
 	SET name = $1
@@ -55,7 +55,7 @@ func SetRequestName(db *sqlx.DB, id uuid.UUID, name string) error {
 	return err
 }
 
-func DeleteRequest(db *sqlx.DB, id uuid.UUID) error {
+func DeleteRequest(db *sqlx.DB, id string) error {
 	_, err := db.Exec(`
 	DELETE FROM requests
 	WHERE id = $1;
