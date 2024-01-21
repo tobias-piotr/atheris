@@ -3,6 +3,7 @@ package tui
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 
 	"atheris/requests"
 
@@ -52,10 +53,13 @@ var keys = keyMap{
 }
 
 type RequestDetails struct {
-	textArea *textarea.Model
-	help     *help.Model
-	db       *sqlx.DB
-	reqID    *string
+	textArea    *textarea.Model
+	help        *help.Model
+	db          *sqlx.DB
+	reqID       *string
+	req         *requests.Request
+	renaming    bool
+	renameInput *input
 }
 
 func NewRequestDetails(db *sqlx.DB, reqID *string) RequestDetails {
@@ -66,28 +70,48 @@ func NewRequestDetails(db *sqlx.DB, reqID *string) RequestDetails {
 		help:     &h,
 		db:       db,
 		reqID:    reqID,
+		renaming: false,
 	}
 }
 
-func (rd RequestDetails) Update(msg tea.KeyMsg, m *model) (tea.Model, tea.Cmd) {
+func (rd *RequestDetails) Update(msg tea.KeyMsg, m *model) (tea.Model, tea.Cmd) {
+	if rd.renaming {
+		cmd := rd.renameInput.Update(msg, rd)
+		return m, cmd
+	}
+
 	switch msg.String() {
 	case "r":
+		rd.renaming = true
+		rd.renameInput = NewInput()
 		return m, nil
 	case "d":
+		err := requests.DeleteRequest(rd.db, *rd.reqID)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error deleting request: %s\n", err.Error())
+			os.Exit(1)
+		}
+		m.list.items.RemoveItem(m.list.items.Cursor())
+		m.selectedRq = nil
+		rd.reqID = nil
+		rd.req = nil
 		return m, nil
 	case "b":
 		m.selectedRq = nil
+		rd.reqID = nil
+		rd.req = nil
 		return m, nil
 	}
 	return m, nil
 }
 
 func (rd RequestDetails) View() string {
-	req, err := requests.GetRequest(rd.db, *rd.reqID)
-	if err != nil {
-		return fmt.Sprintf("Error: %s", err.Error())
+	if rd.renaming {
+		return rd.renameInput.View()
 	}
-	reqText, err := json.MarshalIndent(req.Response, "", "  ")
+
+	// TODO: This could also be cached
+	reqText, err := json.MarshalIndent(rd.req.Response, "", "  ")
 	if err != nil {
 		return fmt.Sprintf("Error: %s", err.Error())
 	}
@@ -96,7 +120,7 @@ func (rd RequestDetails) View() string {
 
 	return fmt.Sprintf(
 		"%s\n\n%s",
-		req.ID,
+		rd.req.ID,
 		rd.textArea.View(),
 	) + "\n\n" + rd.help.View(keys)
 }

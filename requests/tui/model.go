@@ -1,6 +1,11 @@
 package tui
 
 import (
+	"fmt"
+	"os"
+
+	"atheris/requests"
+
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/jmoiron/sqlx"
@@ -43,6 +48,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				rq := m.list.items.SelectedItem().(item)
 				m.selectedRq = &rq.id
 				m.details.reqID = m.selectedRq
+				req, err := requests.GetRequest(m.db, *m.selectedRq)
+				if err != nil {
+					fmt.Fprintf(os.Stderr, "Error getting request: %s\n", err.Error())
+					os.Exit(1)
+				}
+				m.details.req = &req
 				return m, nil
 			}
 		} else {
